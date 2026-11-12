@@ -5,8 +5,8 @@
     pip install -r requirements.txt
     set BOT_TOKEN=токен_от_BotFather        (Windows)
     set ADMIN_IDS=123456789,987654321       (Telegram ID членов совета)
-    set AI_API_KEY=ключ_SmartAPI             (для подбора партнёров через ИИ)
-    set AI_MODEL=deepseek-v4-pro             (необязательно; список моделей — команда /models)
+    set AI_API_KEY=ключ_smertapi.top         (для подбора партнёров через ИИ)
+    set AI_MODEL=claude-sonnet-5-5           (необязательно; список моделей — команда /models)
     python bot.py
 
 Linux/Mac: export вместо set.
@@ -560,10 +560,10 @@ async def event_done(msg: Message, state: FSMContext):
 
 
 # ---------- Подбор партнёров (ИИ) ----------
-# SmartAPI (smartapi.shop) — OpenAI-совместимый API, один ключ ко многим моделям
+# smertapi.top — OpenAI-совместимый API, один ключ ко многим моделям
 AI_API_KEY = os.getenv("AI_API_KEY", "")
-AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.smartapi.shop/v1").rstrip("/")
-AI_MODEL = os.getenv("AI_MODEL", "deepseek-v4-pro")
+AI_BASE_URL = os.getenv("AI_BASE_URL", "https://smertapi.top/v1").rstrip("/")
+AI_MODEL = os.getenv("AI_MODEL", "claude-sonnet-5-5")
 
 
 class FindForm(StatesGroup):
@@ -596,7 +596,7 @@ def _ai_error(status: int, body: str) -> str:
     if status == 401:
         return "ключ AI_API_KEY не принят сервисом — проверьте, что он скопирован полностью"
     if status == 402:
-        return "на балансе SmartAPI закончились средства"
+        return "на балансе smertapi.top закончились средства"
     if status in (400, 404) and "model" in msg.lower():
         return f"модель «{AI_MODEL}» недоступна ({msg}). Список моделей: /models"
     return f"ошибка сервиса ИИ {status}: {msg}"
