@@ -33,7 +33,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 PROXY_URL = os.getenv("PROXY_URL")  # например socks5://127.0.0.1:1080 или http://127.0.0.1:8080
 ADMINS = {int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip().isdigit()}
-DB_PATH = "partners.db"
+DB_PATH = os.getenv("DB_PATH", "partners.db")  # на хостинге: /data/partners.db, чтобы база не стиралась при обновлении
 REMIND_DAYS = 3  # через сколько дней напомнить о повторном контакте
 
 SUPPORT = {
