@@ -407,6 +407,7 @@ footer{border-top:1px solid var(--bd);background:var(--bg2);padding:64px 0 32px}
 <fieldset class="step">
 <legend>Что хотите обсудить</legend>
 <div class="f w"><label for="fmt">Формат партнёрства</label><select id="fmt" name="Формат"><option>Пока не знаю, хочу обсудить</option><option>Генеральный</option><option>Официальный</option><option>Информационный</option><option>Проектный</option></select></div>
+<input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
 <div class="f w"><label for="msg">Сообщение</label><textarea id="msg" name="Сообщение"></textarea></div>
 </fieldset>
 <div class="send"><button class="btn out" type="button" id="back" hidden>Назад</button><button class="btn mag" type="submit" id="next">Дальше</button><span class="note">Совет свяжется с вами по указанным контактам.</span></div>
@@ -454,7 +455,7 @@ const CONFIG = {
   phone: "", phoneLabel: "",          // "+79991234567" и "+7 999 123-45-67"
   vk: "", vkLabel: "",                // "https://vk.com/..." и "vk.com/..."
   email: "",                          // почта совета: на неё уйдёт заявка, если не задан formEndpoint
-  formEndpoint: "",                   // адрес приёма форм (например, Formspree): заявка уйдёт POST-запросом
+  formEndpoint: "https://formspree.io/f/mqpqaqvz",                   // адрес приёма форм (например, Formspree): заявка уйдёт POST-запросом
   mediakitUrl: "",                    // ссылка на PDF-медиакит, например "mediakit.pdf" (файл лежит рядом с сайтом)
   stats: [                            // WOW: анимированные счётчики. Только реальные цифры!
     // {n: 120, label: "студентов в активе"}
@@ -603,11 +604,12 @@ const CONFIG = {
   }
   function done(title, text) { form.hidden = true; $("#okt").textContent = title; $("#oktx").textContent = text; $("#ok").hidden = false; $("#ok").scrollIntoView({ behavior: "smooth", block: "center" }); burst(); }
   function submit() {
-    var data = {}; $$("input,select,textarea", form).forEach(function (i) { data[i.name] = i.value.trim(); });
+    var data = {}; $$("input,select,textarea", form).forEach(function (i) { if (i.name !== "_gotcha") data[i.name] = i.value.trim(); });
     var text = Object.keys(data).map(function (k) { return k + ": " + (data[k] || "—"); }).join("\n");
     nextB.classList.add("busy"); nextB.textContent = "Отправляем";
     if (CONFIG.formEndpoint) {
-      fetch(CONFIG.formEndpoint, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(data) })
+      var payload = Object.assign({ _subject: "Заявка партнёра: " + (data["Компания"] || "без названия"), _replyto: data["Email"], _gotcha: $("[name=_gotcha]", form).value }, data);
+      fetch(CONFIG.formEndpoint, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(payload) })
         .then(function (r) { if (!r.ok) throw 0; done("Заявка отправлена", "Спасибо! Совет свяжется с вами по указанным контактам."); })
         .catch(function () { nextB.classList.remove("busy"); nextB.textContent = "Отправить заявку"; alert("Не удалось отправить заявку. Попробуйте ещё раз или свяжитесь с советом напрямую."); });
     } else if (CONFIG.email) {
