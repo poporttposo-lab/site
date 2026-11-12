@@ -6,7 +6,7 @@
     set BOT_TOKEN=токен_от_BotFather        (Windows)
     set ADMIN_IDS=123456789,987654321       (Telegram ID членов совета)
     set AI_API_KEY=ключ_smertapi.top         (для подбора партнёров через ИИ)
-    set AI_MODEL=claude-sonnet-5-5           (необязательно; список моделей — команда /models)
+    set AI_MODEL=kimi-k3                     (необязательно; список моделей — команда /models)
     python bot.py
 
 Linux/Mac: export вместо set.
@@ -16,6 +16,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import sqlite3
 from datetime import datetime, timedelta
 
@@ -563,7 +564,7 @@ async def event_done(msg: Message, state: FSMContext):
 # smertapi.top — OpenAI-совместимый API, один ключ ко многим моделям
 AI_API_KEY = os.getenv("AI_API_KEY", "")
 AI_BASE_URL = os.getenv("AI_BASE_URL", "https://smertapi.top/v1").rstrip("/")
-AI_MODEL = os.getenv("AI_MODEL", "claude-sonnet-5-5")
+AI_MODEL = os.getenv("AI_MODEL", "kimi-k3")
 
 
 class FindForm(StatesGroup):
@@ -584,7 +585,8 @@ def build_prompt(d: dict) -> str:
         "(доступ к студентам, рекрутинг, ESG). Только реально существующие компании, "
         "ничего не выдумывай, а если не уверен в сайте, напиши «проверить». "
         "Ответ дай по одной компании в строке в формате:\n"
-        "Название | сфера | почему подходит и что можно попросить | сайт"
+        "Название | сфера | почему подходит и что можно попросить | сайт\n"
+        "Без таблиц, заголовков и пояснений до или после списка."
     )
 
 
@@ -644,9 +646,13 @@ async def models_cmd(msg: Message):
 def parse_lines(text: str) -> list[dict]:
     items = []
     for line in text.splitlines():
-        line = line.strip().lstrip("0123456789.-•) ").strip()
+        # модели часто отвечают markdown-таблицей или с **жирным** — приводим к «a | b | c | d»
+        line = line.replace("**", "").replace("`", "").strip().strip("|").strip()
+        line = re.sub(r"^(\d+[.)]|[-•*])\s*", "", line)
         parts = [p.strip() for p in line.split("|")]
-        if len(parts) >= 2 and parts[0]:
+        if not parts[0] or set(parts[0]) <= set("-: ") or parts[0].lower() in ("название", "компания", "№"):
+            continue
+        if len(parts) >= 2:
             items.append({
                 "name": parts[0], "sphere": parts[1],
                 "why": parts[2] if len(parts) > 2 else "",
