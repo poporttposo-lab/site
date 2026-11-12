@@ -30,10 +30,26 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+def load_env_file(path: str):
+    # хостинги без настройки переменных: настройки берутся из файла .env рядом с bot.py
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8-sig") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_env_file(os.path.join(BASE_DIR, ".env"))
+
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 PROXY_URL = os.getenv("PROXY_URL")  # например socks5://127.0.0.1:1080 или http://127.0.0.1:8080
 ADMINS = {int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip().isdigit()}
-DB_PATH = os.getenv("DB_PATH", "partners.db")  # на хостинге: /data/partners.db, чтобы база не стиралась при обновлении
+DB_PATH = os.getenv("DB_PATH") or os.path.join(BASE_DIR, "partners.db")
 REMIND_DAYS = 3  # через сколько дней напомнить о повторном контакте
 
 SUPPORT = {
