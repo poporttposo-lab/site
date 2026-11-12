@@ -7,7 +7,7 @@
     set ADMIN_IDS=123456789,987654321       (Telegram ID членов совета)
     set AI_API_KEY=ключ_smertapi.top         (для подбора партнёров через ИИ)
     set AI_MODEL=kimi-k3                     (необязательно; список моделей — команда /models)
-    python bot.py
+    python main.py
 
 Linux/Mac: export вместо set.
 Свой Telegram ID можно узнать у бота @userinfobot.
@@ -31,7 +31,7 @@ from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 def load_env_file(path: str):
-    # хостинги без настройки переменных: настройки берутся из файла .env рядом с bot.py
+    # хостинги без настройки переменных: настройки берутся из файла .env рядом с main.py
     if not os.path.exists(path):
         return
     with open(path, encoding="utf-8-sig") as f:
